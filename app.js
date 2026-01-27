@@ -32,8 +32,8 @@ app.post('/envelopes', (req, res, next) => {
 
 app.get('/envelopes/:id', (req, res, next) => {
     const envelopId = Number(req.params.id)
-    const envelopeById = envelopes.find(envelope => {
-        return envelope.id === envelopId
+    const envelopeById = envelopes.find(e => {
+        return e.id === envelopId
     })
 
     if (!envelopeById) {
@@ -50,13 +50,13 @@ app.put("/envelopes/:id", (req, res, next) => {
     })
 
     if (!envelopeById) {
-        res.status(404).send("Envelope not found")
+        return res.status(404).send("Envelope not found")
     }
 
     const expense = Number(req.body.expense);
 
     if (!Number.isFinite(expense) || expense <= 0) {
-        res.status(400).send("Invalid expense amount")
+        return res.status(400).send("Invalid expense amount")
     }
 
     if (expense > envelopeById.budget) {
@@ -86,6 +86,10 @@ app.post("/envelopes/transfer/:from/:to", (req, res, next) => {
     const toId = Number(req.params.to)
     const amount = Number(req.headers["transfer-amount"])
 
+    if (!Number.isFinite(amount) || amount  <= 0) {
+        return res.status(400).send('Invalid transfer amount')
+    }
+
     const fromEnvelope = envelopes.find(e => {
             return e.id === fromId
         })
@@ -94,18 +98,16 @@ app.post("/envelopes/transfer/:from/:to", (req, res, next) => {
         return e.id === toId
     })
 
-    if (amount < fromEnvelope.budget) {
+    if (!fromEnvelope || !toEnvelope) {
+        return res.status(404).send('One or both envelopes not found');
+    }
 
-        const amountToAdd = fromEnvelope.budget - amount
-        fromEnvelope.budget = amountToAdd
-
-        let budget = toEnvelope.budget
-        toEnvelope.budget = budget + amount
-
-        res.send(toEnvelope)
-    
-    } else {
+    if (amount > fromEnvelope.budget) {
         return res.status(400).send(`Insufficient budget in id ${fromId}`)
     }
+
+    fromEnvelope.budget - amount;
+    toEnvelope.budget += amount
+    res.send({ fromEnvelope, toEnvelope })
 
 })
