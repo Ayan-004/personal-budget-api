@@ -40,7 +40,7 @@ app.get('/envelopes/:id', (req, res, next) => {
         return res.status(404).send("Envelope not found")
     }
 
-    res.send(envelopeById)
+    return res.send(envelopeById)
 })
 
 app.put("/envelopes/:id", (req, res, next) => {
@@ -64,7 +64,7 @@ app.put("/envelopes/:id", (req, res, next) => {
     }
 
     envelopeById.budget -= expense
-    res.send(envelopeById)
+    return res.send(envelopeById)
 })
 
 app.delete("/envelopes/:id", (req, res, next) => {
@@ -106,8 +106,8 @@ app.post("/envelopes/transfer/:from/:to", (req, res, next) => {
         return res.status(400).send(`Insufficient budget in id ${fromId}`)
     }
 
-    fromEnvelope.budget - amount;
+    fromEnvelope.budget -= amount;
     toEnvelope.budget += amount
-    res.send({ fromEnvelope, toEnvelope })
+    return res.send({ fromEnvelope, toEnvelope })
 
 })
